@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vocabulary Practice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #addWordButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            margin: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        #addWordButton:hover {
+            background-color: #45a049;
+        }
+
+        #popupForm {
+            display: none;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            margin: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #saveWordButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        #saveWordButton:hover {
+            background-color: #45a049;
+        }
+
+        #wordList {
+            width: 80%;
+            margin: 20px;
+        }
+
+        .wordItem {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wordItem strong {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .wordItem audio {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <button id="addWordButton">Add New Word</button>
+    <div id="wordList"></div>
+
+    <div id="popupForm">
+        <label for="wordName">Word:</label>
+        <input type="text" id="wordName"><br>
+        <label for="wordPhonetics">Phonetically:</label>
+        <input type="text" id="wordPhonetics"><br>
+        <label for="wordDefinition">Definition:</label>
+        <input type="text" id="wordDefinition"><br>
+        <label for="wordAudio">Audio:</label>
+        <input type="file" id="wordAudio"><br>
+        <button id="saveWordButton">Save Word</button>
+    </div>
+
+    <script>
+        document.getElementById('addWordButton').addEventListener('click', function() {
+            document.getElementById('popupForm').style.display = 'block';
+        });
+
+        document.getElementById('saveWordButton').addEventListener('click', function() {
+            const wordName = document.getElementById('wordName').value;
+            const wordPhonetics = document.getElementById('wordPhonetics').value;
+            const wordDefinition = document.getElementById('wordDefinition').value;
+            const wordAudio = document.getElementById('wordAudio').files[0];
+
+            // Create a new div for the word
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'wordItem';
+            wordDiv.innerHTML = `<strong>${wordName}</strong> (${wordPhonetics}): ${wordDefinition}`;
+
+            // Add audio element if there is an audio file
+            if (wordAudio) {
+                const audioElement = document.createElement('audio');
+                audioElement.controls = true;
+                const audioURL = URL.createObjectURL(wordAudio);
+                audioElement.src = audioURL;
+                wordDiv.appendChild(audioElement);
+            }
+
+            document.getElementById('wordList').appendChild(wordDiv);
+
+            // Hide the form
+            document.getElementById('popupForm').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
