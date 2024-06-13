@@ -262,3 +262,309 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vocabulary Practice</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        nav {
+            width: 100%;
+            background-color: #1e1e1e;
+            padding: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #4CAF50;
+        }
+
+        #addWordButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            margin: 100px 0 20px 0;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #addWordButton:hover {
+            background-color: #45a049;
+        }
+
+        #popupForm {
+            display: none;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 400px;
+            margin: 20px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -40%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        #popupForm label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #popupForm input[type="text"],
+        #popupForm input[type="file"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #2e2e2e;
+            color: #e0e0e0;
+        }
+
+        #popupForm input[type="file"] {
+            padding: 5px;
+        }
+
+        #saveWordButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #saveWordButton:hover {
+            background-color: #45a049;
+        }
+
+        #wordList {
+            width: 80%;
+            margin: 20px;
+        }
+
+        .wordItem {
+            background-color: #1e1e1e;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wordItem strong {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .wordItem audio {
+            margin-top: 10px;
+        }
+
+        .removeWordButton {
+            background-color: transparent;
+            border: none;
+            color: red;
+            font-size: 16px;
+            cursor: pointer;
+            align-self: flex-end;
+        }
+
+        .removeWordButton:hover {
+            color: darkred;
+        }
+
+        .custom-file-input {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .custom-file-input input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .custom-file-input label {
+            display: block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .custom-file-input label:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Vocabulary</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </nav>
+    <button id="addWordButton"><i class="fas fa-plus"></i> Add New Word</button>
+    <div id="wordList"></div>
+
+    <div id="popupForm">
+        <label for="wordName">Word:</label>
+        <input type="text" id="wordName"><br>
+        <label for="wordPhonetics">Phonetically:</label>
+        <input type="text" id="wordPhonetics"><br>
+        <label for="wordDefinition">Definition:</label>
+        <input type="text" id="wordDefinition"><br>
+        <label for="wordVietnameseDefinition">Vietnamese Definition:</label>
+        <input type="text" id="wordVietnameseDefinition"><br>
+        <div class="custom-file-input">
+            <input type="file" id="wordAudio">
+            <label for="wordAudio">Choose Audio</label>
+        </div>
+        <button id="saveWordButton">Save Word</button>
+    </div>
+
+    <script>
+        document.getElementById('addWordButton').addEventListener('click', function() {
+            document.getElementById('popupForm').style.display = 'block';
+        });
+
+        document.getElementById('saveWordButton').addEventListener('click', function() {
+            const wordName = document.getElementById('wordName').value;
+            const wordPhonetics = document.getElementById('wordPhonetics').value;
+            const wordDefinition = document.getElementById('wordDefinition').value;
+            const wordVietnameseDefinition = document.getElementById('wordVietnameseDefinition').value;
+            const wordAudio = document.getElementById('wordAudio').files[0];
+
+            // Save the word data
+            const wordData = {
+                name: wordName,
+                phonetics: wordPhonetics,
+                definition: wordDefinition,
+                vietnameseDefinition: wordVietnameseDefinition,
+                audio: wordAudio ? URL.createObjectURL(wordAudio) : null
+            };
+
+            saveWordToLocalStorage(wordData);
+            addWordToList(wordData);
+
+            // Hide the form
+            document.getElementById('popupForm').style.display = 'none';
+        });
+
+        // Save word to local storage
+        function saveWordToLocalStorage(word) {
+            let words = JSON.parse(localStorage.getItem('words')) || [];
+            words.push(word);
+            localStorage.setItem('words', JSON.stringify(words));
+        }
+
+        // Add word to the list
+        function addWordToList(word) {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'wordItem';
+            wordDiv.innerHTML = `
+                <strong>${word.name}</strong> (${word.phonetics}): ${word.definition}<br>
+                <em>${word.vietnameseDefinition}</em>
+                <button class="removeWordButton"><i class="fas fa-trash"></i></button>
+            `;
+
+            // Add audio element if there is an audio file
+            if (word.audio) {
+                const audioElement = document.createElement('audio');
+                audioElement.controls = true;
+                audioElement.src = word.audio;
+                wordDiv.appendChild(audioElement);
+            }
+
+            document.getElementById('wordList').appendChild(wordDiv);
+
+            // Add event listener to the remove button
+            wordDiv.querySelector('.removeWordButton').addEventListener('click', function() {
+                wordDiv.remove();
+                removeWordFromLocalStorage(word.name);
+            });
+        }
+
+        // Load words from local storage
+        function loadWordsFromLocalStorage() {
+            const words = JSON.parse(localStorage.getItem('words')) || [];
+            words.forEach(word => addWordToList(word));
+        }
+
+        // Remove word from local storage
+        function removeWordFromLocalStorage(wordName) {
+            let words = JSON.parse(localStorage.getItem('words')) || [];
+            words = words.filter(word => word.name !== wordName);
+            localStorage.setItem('words', JSON.stringify(words));
+        }
+
+        // Load words when the page loads
+        window.addEventListener('load', loadWordsFromLocalStorage);
+    </script>
+</body>
+</html>
