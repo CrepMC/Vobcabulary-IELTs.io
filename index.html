@@ -7,7 +7,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #121212;
+            color: #e0e0e0;
             margin: 0;
             padding: 0;
             display: flex;
@@ -15,15 +16,49 @@
             align-items: center;
         }
 
+        nav {
+            width: 100%;
+            background-color: #1e1e1e;
+            padding: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #4CAF50;
+        }
+
         #addWordButton {
             background-color: #4CAF50;
             color: white;
             padding: 15px 20px;
-            margin: 20px;
+            margin: 100px 0 20px 0;
             border: none;
             cursor: pointer;
             font-size: 16px;
             border-radius: 5px;
+            transition: background-color 0.3s;
         }
 
         #addWordButton:hover {
@@ -32,27 +67,38 @@
 
         #popupForm {
             display: none;
-            background-color: white;
+            background-color: #1e1e1e;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 400px;
             margin: 20px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
         }
 
-        label {
+        #popupForm label {
             display: block;
             margin-bottom: 10px;
             font-weight: bold;
         }
 
-        input[type="text"],
-        input[type="file"] {
+        #popupForm input[type="text"],
+        #popupForm input[type="file"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            background-color: #2e2e2e;
+            color: #e0e0e0;
+        }
+
+        #popupForm input[type="file"] {
+            padding: 5px;
         }
 
         #saveWordButton {
@@ -63,6 +109,7 @@
             cursor: pointer;
             font-size: 16px;
             border-radius: 5px;
+            transition: background-color 0.3s;
         }
 
         #saveWordButton:hover {
@@ -75,7 +122,7 @@
         }
 
         .wordItem {
-            background-color: white;
+            background-color: #1e1e1e;
             border: 1px solid #ccc;
             border-radius: 10px;
             padding: 15px;
@@ -106,9 +153,46 @@
         .removeWordButton:hover {
             color: darkred;
         }
+
+        .custom-file-input {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .custom-file-input input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .custom-file-input label {
+            display: block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .custom-file-input label:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Vocabulary</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </nav>
     <button id="addWordButton"><i class="fas fa-plus"></i> Add New Word</button>
     <div id="wordList"></div>
 
@@ -121,8 +205,10 @@
         <input type="text" id="wordDefinition"><br>
         <label for="wordVietnameseDefinition">Vietnamese Definition:</label>
         <input type="text" id="wordVietnameseDefinition"><br>
-        <label for="wordAudio">Audio:</label>
-        <input type="file" id="wordAudio"><br>
+        <div class="custom-file-input">
+            <input type="file" id="wordAudio">
+            <label for="wordAudio">Choose Audio</label>
+        </div>
         <button id="saveWordButton">Save Word</button>
     </div>
 
@@ -165,6 +251,13 @@
 
             // Hide the form
             document.getElementById('popupForm').style.display = 'none';
+        });
+
+        // Close the form when clicking outside of it
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('popupForm')) {
+                document.getElementById('popupForm').style.display = 'none';
+            }
         });
     </script>
 </body>
