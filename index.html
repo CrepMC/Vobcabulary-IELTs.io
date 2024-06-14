@@ -222,6 +222,29 @@
         </div>
         <button id="saveWordButton">Save Word</button>
     </div>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  const firebase = require("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+  const analytics = require("https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js");
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLcE9C6pGffHkoCktnOhqqWMkAFSXM3SA",
+    authDomain: "vobcabulary.firebaseapp.com",
+    projectId: "vobcabulary",
+    storageBucket: "vobcabulary.appspot.com",
+    messagingSenderId: "115014795434",
+    appId: "1:115014795434:web:a801f331ebd4bcc7e5d0d3",
+    measurementId: "G-SC9JMR5TSR"
+  };
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const analyticsInstance = analytics.getAnalytics(app);
+</script>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js';
