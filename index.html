@@ -88,7 +88,7 @@
 
         #popupForm input[type="text"],
         #popupForm input[type="file"] {
-            width: 100%;
+            width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
@@ -193,6 +193,18 @@
         .custom-file-input label:hover {
             background-color: #45a049;
         }
+
+        .closeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: #e0e0e0;
+        }
+
+        .closeButton:hover {
+            color: #ff0000;
+        }
     </style>
 </head>
 <body>
@@ -207,7 +219,7 @@
     <div id="wordList"></div>
 
     <div id="popupForm">
-        <button id="closePopup" style="position: absolute; top: 10px; right: 10px;">Close</button>
+        <i id="closePopup" class="fas fa-times closeButton"></i>
         <label for="wordName">Word:</label>
         <input type="text" id="wordName"><br>
         <label for="wordPhonetics">Phonetically:</label>
@@ -256,22 +268,14 @@
             wordDiv.innerHTML = `
                 <strong>${word.name}</strong> (${word.phonetics}): ${word.definition}<br>
                 <em>${word.vietnameseDefinition}</em>
-                <button class="editWordButton" data-id="${id}"><i class="fas fa-pen"></i></button>
-                <button class="removeWordButton" data-id="${id}"><i class="fas fa-trash"></i></button>
+                ${word.audio ? `<audio controls src="${word.audio}"></audio>` : ''}
+                <button class="editWordButton" data-id="${id}"><i class="fas fa-edit"></i></button>
+                <button class="removeWordButton" data-id="${id}"><i class="fas fa-trash-alt"></i></button>
             `;
-
-            if (word.audio) {
-                const audioElement = document.createElement('audio');
-                audioElement.controls = true;
-                audioElement.src = word.audio;
-                wordDiv.appendChild(audioElement);
-            }
-
             document.getElementById('wordList').appendChild(wordDiv);
 
             wordDiv.querySelector('.editWordButton').addEventListener('click', function() {
                 const id = this.dataset.id;
-                // Implement edit functionality
                 editWord(id);
             });
 
@@ -319,7 +323,6 @@
         });
 
         function editWord(id) {
-            // Fetch the word data by ID and populate the form for editing
             const wordRef = doc(db, "words", id);
             getDoc(wordRef).then(docSnapshot => {
                 if (docSnapshot.exists()) {
@@ -330,7 +333,6 @@
                     document.getElementById('wordVietnameseDefinition').value = word.vietnameseDefinition;
                     document.getElementById('popupForm').style.display = 'block';
 
-                    // Update save button to update the word instead of adding new
                     document.getElementById('saveWordButton').onclick = async function() {
                         await updateDoc(wordRef, {
                             name: document.getElementById('wordName').value,
