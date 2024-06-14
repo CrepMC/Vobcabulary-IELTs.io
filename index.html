@@ -78,18 +78,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 1001;
-            animation: fadeIn 0.5s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -40%);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
         }
 
         #popupForm label {
@@ -100,14 +88,17 @@
 
         #popupForm input[type="text"],
         #popupForm input[type="file"] {
-            width: calc(100% - 20px);
+            width: 100%;
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             background-color: #2e2e2e;
             color: #e0e0e0;
-            box-sizing: border-box;
+        }
+
+        #popupForm input[type="file"] {
+            padding: 5px;
         }
 
         #saveWordButton {
@@ -123,24 +114,6 @@
 
         #saveWordButton:hover {
             background-color: #45a049;
-        }
-
-        #closeFormButton {
-            background-color: #f44336;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-
-        #closeFormButton:hover {
-            background-color: #d32f2f;
         }
 
         #wordList {
@@ -160,9 +133,8 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            flex: 0 1 calc(20% - 20px);
-            box-sizing: border-box;
+            max-width: 180px;
+            text-align: center;
         }
 
         .wordItem strong {
@@ -175,17 +147,21 @@
             width: 100%;
         }
 
-        .removeWordButton {
+        .removeWordButton,
+        .editWordButton {
             background-color: transparent;
             border: none;
-            color: red;
-            font-size: 16px;
             cursor: pointer;
-            margin-top: 10px;
+            font-size: 16px;
         }
 
-        .removeWordButton:hover {
+        .removeWordButton:hover,
+        .editWordButton:hover {
             color: darkred;
+        }
+
+        .editWordButton {
+            color: blue;
         }
 
         .custom-file-input {
@@ -231,7 +207,7 @@
     <div id="wordList"></div>
 
     <div id="popupForm">
-        <button id="closeFormButton">X</button>
+        <button id="closePopup" style="position: absolute; top: 10px; right: 10px;">Close</button>
         <label for="wordName">Word:</label>
         <input type="text" id="wordName"><br>
         <label for="wordPhonetics">Phonetically:</label>
@@ -246,103 +222,127 @@
         </div>
         <button id="saveWordButton">Save Word</button>
     </div>
-<!-- Firebase App (the core Firebase SDK) -->
-<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
 
-<!-- Add Firestore SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js';
 
-<script>
-    // TODO: Replace the following with your app's Firebase project configuration
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-</script>
-
-   <script>
-    // Load words from Firestore
-    async function loadWords() {
-        const querySnapshot = await db.collection("words").get();
-        querySnapshot.forEach((doc) => {
-            addWordToList(doc.data(), doc.id);
-        });
-    }
-
-    // Function to add word to the list
-    function addWordToList(word, id) {
-        const wordDiv = document.createElement('div');
-        wordDiv.className = 'wordItem';
-        wordDiv.innerHTML = `
-            <strong>${word.name}</strong> (${word.phonetics}): ${word.definition}<br>
-            <em>${word.vietnameseDefinition}</em>
-            <button class="editWordButton" data-id="${id}"><i class="fas fa-pen"></i></button>
-            <button class="removeWordButton" data-id="${id}"><i class="fas fa-trash"></i></button>
-        `;
-
-        if (word.audio) {
-            const audioElement = document.createElement('audio');
-            audioElement.controls = true;
-            audioElement.src = word.audio;
-            wordDiv.appendChild(audioElement);
-        }
-
-        document.getElementById('wordList').appendChild(wordDiv);
-
-        wordDiv.querySelector('.editWordButton').addEventListener('click', function() {
-            const id = this.dataset.id;
-            // Fetch and populate form with the word's details (not implemented here)
-        });
-
-        wordDiv.querySelector('.removeWordButton').addEventListener('click', async function() {
-            const id = this.dataset.id;
-            if (confirm('Are you sure you want to delete this word?')) {
-                await db.collection("words").doc(id).delete();
-                wordDiv.remove();
-            }
-        });
-    }
-
-    // Save a new word to Firestore
-    document.getElementById('saveWordButton').addEventListener('click', async function() {
-        const wordName = document.getElementById('wordName').value;
-        const wordPhonetics = document.getElementById('wordPhonetics').value;
-        const wordDefinition = document.getElementById('wordDefinition').value;
-        const wordVietnameseDefinition = document.getElementById('wordVietnameseDefinition').value;
-        const wordAudio = document.getElementById('wordAudio').files[0];
-
-        const wordData = {
-            name: wordName,
-            phonetics: wordPhonetics,
-            definition: wordDefinition,
-            vietnameseDefinition: wordVietnameseDefinition,
-            audio: wordAudio ? URL.createObjectURL(wordAudio) : null
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
-        const docRef = await db.collection("words").add(wordData);
-        addWordToList(wordData, docRef.id);
-        document.getElementById('popupForm').style.display = 'none';
-        clearForm();
-    });
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    function clearForm() {
-        document.getElementById('wordName').value = '';
-        document.getElementById('wordPhonetics').value = '';
-        document.getElementById('wordDefinition').value = '';
-        document.getElementById('wordVietnameseDefinition').value = '';
-        document.getElementById('wordAudio').value = '';
-    }
+        async function loadWords() {
+            const querySnapshot = await getDocs(collection(db, "words"));
+            querySnapshot.forEach((doc) => {
+                addWordToList(doc.data(), doc.id);
+            });
+        }
 
-    // Load words when the page loads
-    window.addEventListener('load', loadWords);
-</script>
+        function addWordToList(word, id) {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'wordItem';
+            wordDiv.innerHTML = `
+                <strong>${word.name}</strong> (${word.phonetics}): ${word.definition}<br>
+                <em>${word.vietnameseDefinition}</em>
+                <button class="editWordButton" data-id="${id}"><i class="fas fa-pen"></i></button>
+                <button class="removeWordButton" data-id="${id}"><i class="fas fa-trash"></i></button>
+            `;
+
+            if (word.audio) {
+                const audioElement = document.createElement('audio');
+                audioElement.controls = true;
+                audioElement.src = word.audio;
+                wordDiv.appendChild(audioElement);
+            }
+
+            document.getElementById('wordList').appendChild(wordDiv);
+           
+            wordDiv.querySelector('.editWordButton').addEventListener('click', function() {
+                const id = this.dataset.id;
+                // Implement edit functionality
+                editWord(id);
+            });
+
+            wordDiv.querySelector('.removeWordButton').addEventListener('click', async function() {
+                const id = this.dataset.id;
+                if (confirm('Are you sure you want to delete this word?')) {
+                    await deleteDoc(doc(db, "words", id));
+                    wordDiv.remove();
+                }
+            });
+        }
+
+        document.getElementById('saveWordButton').addEventListener('click', async function() {
+            const wordName = document.getElementById('wordName').value;
+            const wordPhonetics = document.getElementById('wordPhonetics').value;
+            const wordDefinition = document.getElementById('wordDefinition').value;
+            const wordVietnameseDefinition = document.getElementById('wordVietnameseDefinition').value;
+            const wordAudio = document.getElementById('wordAudio').files[0];
+
+            const wordData = {
+                name: wordName,
+                phonetics: wordPhonetics,
+                definition: wordDefinition,
+                vietnameseDefinition: wordVietnameseDefinition,
+                audio: wordAudio ? URL.createObjectURL(wordAudio) : null
+            };
+
+            const docRef = await addDoc(collection(db, "words"), wordData);
+            addWordToList(wordData, docRef.id);
+            document.getElementById('popupForm').style.display = 'none';
+            clearForm();
+        });
+
+        function clearForm() {
+            document.getElementById('wordName').value = '';
+            document.getElementById('wordPhonetics').value = '';
+            document.getElementById('wordDefinition').value = '';
+            document.getElementById('wordVietnameseDefinition').value = '';
+            document.getElementById('wordAudio').value = '';
+        }
+
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('popupForm').style.display = 'none';
+            clearForm();
+        });
+
+        function editWord(id) {
+            // Fetch the word data by ID and populate the form for editing
+            const wordRef = doc(db, "words", id);
+            getDoc(wordRef).then(docSnapshot => {
+                if (docSnapshot.exists()) {
+                    const word = docSnapshot.data();
+                    document.getElementById('wordName').value = word.name;
+                    document.getElementById('wordPhonetics').value = word.phonetics;
+                    document.getElementById('wordDefinition').value = word.definition;
+                    document.getElementById('wordVietnameseDefinition').value = word.vietnameseDefinition;
+                    document.getElementById('popupForm').style.display = 'block';
+
+                    // Update save button to update the word instead of adding new
+                    document.getElementById('saveWordButton').onclick = async function() {
+                        await updateDoc(wordRef, {
+                            name: document.getElementById('wordName').value,
+                            phonetics: document.getElementById('wordPhonetics').value,
+                            definition: document.getElementById('wordDefinition').value,
+                            vietnameseDefinition: document.getElementById('wordVietnameseDefinition').value,
+                            audio: wordAudio ? URL.createObjectURL(document.getElementById('wordAudio').files[0]) : word.audio
+                        });
+                        document.getElementById('popupForm').style.display = 'none';
+                        loadWords();
+                    };
+                }
+            });
+        }
+
+        window.addEventListener('load', loadWords);
+    </script>
 </body>
 </html>
