@@ -246,107 +246,103 @@
         </div>
         <button id="saveWordButton">Save Word</button>
     </div>
+<!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
 
-    <script>
-        document.getElementById('addWordButton').addEventListener('click', function() {
-            document.getElementById('popupForm').style.display = 'block';
+<!-- Add Firestore SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
+
+<script>
+    // TODO: Replace the following with your app's Firebase project configuration
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+</script>
+
+   <script>
+    // Load words from Firestore
+    async function loadWords() {
+        const querySnapshot = await db.collection("words").get();
+        querySnapshot.forEach((doc) => {
+            addWordToList(doc.data(), doc.id);
         });
+    }
 
-        document.getElementById('closeFormButton').addEventListener('click', function() {
-            document.getElementById('popupForm').style.display = 'none';
-        });
+    // Function to add word to the list
+    function addWordToList(word, id) {
+        const wordDiv = document.createElement('div');
+        wordDiv.className = 'wordItem';
+        wordDiv.innerHTML = `
+            <strong>${word.name}</strong> (${word.phonetics}): ${word.definition}<br>
+            <em>${word.vietnameseDefinition}</em>
+            <button class="editWordButton" data-id="${id}"><i class="fas fa-pen"></i></button>
+            <button class="removeWordButton" data-id="${id}"><i class="fas fa-trash"></i></button>
+        `;
 
-        document.getElementById('saveWordButton').addEventListener('click', function() {
-            const wordName = document.getElementById('wordName').value;
-            const wordPhonetics = document.getElementById('wordPhonetics').value;
-            const wordDefinition = document.getElementById('wordDefinition').value;
-            const wordVietnameseDefinition = document.getElementById('wordVietnameseDefinition').value;
-            const wordAudio = document.getElementById('wordAudio').files[0];
-
-            // Prepare the word object
-            const wordData = {
-                name: wordName,
-                phonetics: wordPhonetics,
-                definition: wordDefinition,
-                vietnameseDefinition: wordVietnameseDefinition,
-                audio: wordAudio ? URL.createObjectURL(wordAudio) : null,
-                audioFile: wordAudio ? saveAudioFile(wordAudio) : null // Save audio file and store the name
-            };
-
-            // Save the word data
-            saveWordToServer(wordData);
-            addWordToList(wordData);
-
-            // Hide the form
-            document.getElementById('popupForm').style.display = 'none';
-        });
-
-        // Save word to "server" (localStorage)
-        function saveWordToServer(word) {
-            const words = JSON.parse(localStorage.getItem('words')) || [];
-            words.push(word);
-            localStorage.setItem('words', JSON.stringify(words));
+        if (word.audio) {
+            const audioElement = document.createElement('audio');
+            audioElement.controls = true;
+            audioElement.src = word.audio;
+            wordDiv.appendChild(audioElement);
         }
 
-        // Save audio file to "server" (localStorage)
-        function saveAudioFile(file) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function () {
-                const audioBase64 = reader.result;
-                localStorage.setItem(file.name, audioBase64); // Save file as base64 string
-            };
-            return file.name;
-        }
+        document.getElementById('wordList').appendChild(wordDiv);
 
-        // Add word to list
-        function addWordToList(word) {
-            const wordDiv = document.createElement('div');
-            wordDiv.className = 'wordItem';
-            wordDiv.innerHTML = `
-                <strong>${word.name}</strong> (${word.phonetics}): ${word.definition}<br>
-                <em>${word.vietnameseDefinition}</em>
-                <button class="removeWordButton"><i class="fas fa-trash"></i></button>
-            `;
+        wordDiv.querySelector('.editWordButton').addEventListener('click', function() {
+            const id = this.dataset.id;
+            // Fetch and populate form with the word's details (not implemented here)
+        });
 
-            if (word.audioFile) {
-                const audioElement = document.createElement('audio');
-                audioElement.controls = true;
-                audioElement.src = getAudioFileFromServer(word.audioFile);
-                wordDiv.appendChild(audioElement);
+        wordDiv.querySelector('.removeWordButton').addEventListener('click', async function() {
+            const id = this.dataset.id;
+            if (confirm('Are you sure you want to delete this word?')) {
+                await db.collection("words").doc(id).delete();
+                wordDiv.remove();
             }
+        });
+    }
 
-            document.getElementById('wordList').appendChild(wordDiv);
+    // Save a new word to Firestore
+    document.getElementById('saveWordButton').addEventListener('click', async function() {
+        const wordName = document.getElementById('wordName').value;
+        const wordPhonetics = document.getElementById('wordPhonetics').value;
+        const wordDefinition = document.getElementById('wordDefinition').value;
+        const wordVietnameseDefinition = document.getElementById('wordVietnameseDefinition').value;
+        const wordAudio = document.getElementById('wordAudio').files[0];
 
-            // Add event listener to the remove button
-            wordDiv.querySelector('.removeWordButton').addEventListener('click', function() {
-                if (confirm('Are you sure you want to delete this word?')) {
-                    wordDiv.remove();
-                    removeWordFromServer(word.name);
-                }
-            });
-        }
+        const wordData = {
+            name: wordName,
+            phonetics: wordPhonetics,
+            definition: wordDefinition,
+            vietnameseDefinition: wordVietnameseDefinition,
+            audio: wordAudio ? URL.createObjectURL(wordAudio) : null
+        };
 
-        // Load words from "server" (localStorage)
-        function loadWordsFromServer() {
-            const words = JSON.parse(localStorage.getItem('words')) || [];
-            words.forEach(word => addWordToList(word));
-        }
+        const docRef = await db.collection("words").add(wordData);
+        addWordToList(wordData, docRef.id);
+        document.getElementById('popupForm').style.display = 'none';
+        clearForm();
+    });
 
-        // Remove word from "server" (localStorage)
-        function removeWordFromServer(wordName) {
-            let words = JSON.parse(localStorage.getItem('words')) || [];
-            words = words.filter(word => word.name !== wordName);
-            localStorage.setItem('words', JSON.stringify(words));
-        }
+    function clearForm() {
+        document.getElementById('wordName').value = '';
+        document.getElementById('wordPhonetics').value = '';
+        document.getElementById('wordDefinition').value = '';
+        document.getElementById('wordVietnameseDefinition').value = '';
+        document.getElementById('wordAudio').value = '';
+    }
 
-        // Get audio file from "server" (localStorage)
-        function getAudioFileFromServer(fileName) {
-            return localStorage.getItem(fileName);
-        }
-
-        // Load words when the page loads
-        window.addEventListener('load', loadWordsFromServer);
-    </script>
+    // Load words when the page loads
+    window.addEventListener('load', loadWords);
+</script>
 </body>
 </html>
